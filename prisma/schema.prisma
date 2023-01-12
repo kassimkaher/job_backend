@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Address {
+  id          String  @id() @default(uuid())
+  title       String
+  discription String?
+  latitude    Float   @default(0.0)
+  longitude   Float   @default(0.0)
+  user_id     String  @unique
+  user        User    @relation(fields: [user_id], references: [id])
+}
+
+model User {
+  id       String @id() @default(uuid())
+  name     String
+  email    String @unique
+  phone    String @unique
+  image_id Int?   @unique
+
+  password      String
+  gander        String
+  jop_title_id  Int?
+  onesignal_id  String?
+  role_id       UserRoles
+  verified      Boolean      @default(false)
+  code          String
+  verified_date DateTime
+  parthday      DateTime
+  token         Token[]
+  enable        Boolean      @default(false)
+  address       Address?
+  company       Company?
+  expereance    Expereance[]
+  requestes     Requsets[]
+  profile_image Files?       @relation(fields: [image_id], references: [id])
+  jop_title     JopTitle?    @relation(fields: [jop_title_id], references: [id])
+  createAt      DateTime     @default(now())
+  updateAt      DateTime     @updatedAt
+}
+
+model Token {
+  id      Int    @id @default(autoincrement())
+  user_id String
+  code    String @unique
+  user    User?  @relation(fields: [user_id], references: [id])
+
+  postsId String?
+}
+
+enum UserRoles {
+  ADMIN
+  COMPANY
+  USER
+}
+
+enum ExpereanceType {
+  STUDY
+  WORK
+}
+
+enum FilesType {
+  IMAGE
+  PDF
+  VIDEO
+  DOC
+}
+
+model Company {
+  id              String      @id() @default(uuid())
+  brand_name      String
+  description     String?
+  user_id         String      @unique
+  company_type_id Int
+  user            User        @relation(fields: [user_id], references: [id])
+  company_type    CompanyType @relation(fields: [company_type_id], references: [id])
+  history         String?
+
+  image_certificate_id Int?   @unique
+  certificate_image    Files? @relation(fields: [image_certificate_id], references: [id])
+
+  Posts Posts[]
+}
+
+model CompanyType {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  company     Company[]
+}
+
+model Expereance {
+  id          String  @id() @default(uuid())
+  title       String
+  description String?
+  user_id     String
+
+  from DateTime
+  to   DateTime
+  type ExpereanceType?
+  user User            @relation(fields: [user_id], references: [id])
+
+  rate      Float   @default(0.0)
+  rate_text String?
+
+  postsId String?
+}
+
+model Files {
+  id      Int       @id @default(autoincrement())
+  path    String
+  type    FilesType @default(IMAGE)
+  user    User?
+  company Company?
+
+  postsId String?
+}
+
+model JopTitle {
+  id        Int    @id @default(autoincrement())
+  title     String
+  parent_id Int?   @default(0)
+  user      User[]
+}
+
+model Posts {
+  id               String        @id() @default(uuid())
+  title            String
+  description      String
+  salary           Int?
+  company_id       String
+  number_of_person Int
+  work_location    WorkLocation?
+  work_time        WorkTime?
+  expire           DateTime
+  week_end         Int
+  day_hour         Int
+  person_level     Level
+  is_open          Boolean       @default(true)
+  jop_title_id     Int?
+  active           Boolean       @default(false)
+
+  company Company?   @relation(fields: [company_id], references: [id])
+  request Requsets[]
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
+
+model Requsets {
+  id            String    @id() @default(uuid())
+  cover_letter  String
+  post_id       String
+  user_id       String
+  attachment    String
+  status        Int
+  expect_salary Int
+  meeting_date  DateTime?
+  user          User     @relation(fields: [user_id], references: [id])
+  post          Posts    @relation(fields: [post_id], references: [id])
+}
+
+enum WorkLocation {
+  ONSITE
+  REMOTLY
+  HYPRID
+}
+
+enum WorkTime {
+  FULL
+  HALF
+  PERPROJECT
+}
+
+enum Level {
+  BEGINEER
+  MEDIUM
+  JUNIUR
+  SENIOR
+  PROF
+  EXPERT
+}
