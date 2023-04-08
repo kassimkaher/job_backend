@@ -19,12 +19,21 @@ export async function checkAuth(req: any, response: any, next: any) {
     req.user_id = user.id;
     req.role_id = user.role_id;
     const code = user.code;
-    const isFound = await prisma.token.findFirst({
+    console.log(user)
+    const isFound = await prisma.token.findMany({
       where: {
         user_id: user.id,
         code: code
-      }
+      },
+      orderBy: {
+        id: 'desc',
+    },
+    take: 1,
     })
+
+
+ 
+
     if (!isFound) {
       return response.status(401).json({ "status": false, "message": "token is blacklist" });
     }

@@ -66,6 +66,7 @@ enum UserRoles {
 enum ExpereanceType {
   STUDY
   WORK
+  PROJECT
 }
 
 enum FilesType {
@@ -88,7 +89,8 @@ model Company {
   image_certificate_id Int?   @unique
   certificate_image    Files? @relation(fields: [image_certificate_id], references: [id])
 
-  Posts Posts[]
+  posts      Posts[]
+  expereance Expereance[]
 }
 
 model CompanyType {
@@ -99,15 +101,16 @@ model CompanyType {
 }
 
 model Expereance {
-  id          String  @id() @default(uuid())
+  id          String          @id() @default(uuid())
   title       String
   description String?
   user_id     String
-
-  from DateTime
-  to   DateTime
-  type ExpereanceType?
-  user User            @relation(fields: [user_id], references: [id])
+  company_id  String? 
+  from        DateTime
+  to          DateTime
+  type        ExpereanceType?
+  user        User            @relation(fields: [user_id], references: [id])
+  company     Company?         @relation(fields: [company_id], references: [id])
 
   rate      Float   @default(0.0)
   rate_text String?
@@ -128,9 +131,18 @@ model Files {
 model JopTitle {
   id        Int    @id @default(autoincrement())
   title     String
-  parent_id Int?   @default(0)
+  parent_id Int?   
   user      User[]
+  
+
+ parentJobTitle  JopTitle?  @relation("ProductCategoryToProductCategory", fields: [parent_id], references: [id])
+  subJobsTitle  JopTitle[] @relation("ProductCategoryToProductCategory")
+
+
+
 }
+
+
 
 model Posts {
   id               String        @id() @default(uuid())
@@ -162,11 +174,11 @@ model Requsets {
   post_id       String
   user_id       String
   attachment    String
-  status        Int
+  status        Int //0 = begin ,1 = see ,  2 = send meeting date, 3 = user is see meeting , 4 = user accept meeting , 5 = user refuse meeting , 6 = accepted user , 7 = user refuse , 8 = user not come to meeting 
   expect_salary Int
   meeting_date  DateTime?
-  user          User     @relation(fields: [user_id], references: [id])
-  post          Posts    @relation(fields: [post_id], references: [id])
+  user          User      @relation(fields: [user_id], references: [id])
+  post          Posts     @relation(fields: [post_id], references: [id])
 }
 
 enum WorkLocation {

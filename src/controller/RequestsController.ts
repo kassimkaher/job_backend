@@ -1,6 +1,6 @@
 
 
-import { PrismaClient, UserRoles } from '@prisma/client'
+import { ExpereanceType, PrismaClient, UserRoles } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -143,16 +143,59 @@ class RequestsController {
             return response.status(401).send({ "status": false, "message": req.company_id });
         }
         try {
+            var request;
+            switch (status) {
+                case 1:
+                    request = await prisma.requsets.update({
+                        where: {
+                            id: request_id
+                        },
+                        data: {
+                            meeting_date, status
 
-            const request = await prisma.requsets.update({
-                where: {
-                    id: request_id
-                },
-                data: {
-                    meeting_date, status
+                        }
+                    });
+                    break;
+                case 6:
+                    request = await prisma.requsets.update({
+                        where: {
+                            id: request_id
+                        },
+                        data: {
+                            meeting_date, status
 
-                }
-            });
+                        }
+                    });
+
+                    await prisma.expereance.create({
+                        data: {
+                            user_id: request.user_id,
+                            title: note,
+                            description: request.cover_letter,
+                            company_id: req.company_id,
+                            from: Date(),
+                            to: Date(),
+                            type: ExpereanceType.WORK,
+                            rate_text: "testing"
+
+                        }
+
+                    })
+
+                    break;
+
+                default:
+                    request = await prisma.requsets.update({
+                        where: {
+                            id: request_id
+                        },
+                        data: {
+                            meeting_date, status
+
+                        }
+                    });
+                    break;
+            }
 
 
             return response.send({ "status": true, "data": request, "message": "request Updated" });
@@ -161,7 +204,65 @@ class RequestsController {
             return response.status(402).send({ "status": false, "message": error });
         }
     }
+    public async updateUserWorkByCompany(req: any, response: any) {
 
+        const { cause,
+            rate,
+            user_id,
+            expereance_id
+
+        } = req.body;
+
+        // Validate user input
+
+        if (!(cause &&
+            rate &&
+            user_id &&
+            expereance_id)) {
+            return response.status(402).send({ "status": false, "message": "field required" });
+
+        }
+
+        const oldRequest = await prisma.expereance.findFirst({
+            where: {
+
+                id: expereance_id,
+                company_id: req.company_id
+
+            }
+        })
+        if (!oldRequest) {
+            return response.status(401).send({ "status": false, "message": "unautharize" });
+        }
+        try {
+
+            await prisma.expereance.update({
+                where: {
+                    id: expereance_id,
+
+                },
+                data: {
+
+
+                    description: cause,
+
+
+                    to: Date(),
+                    rate,
+                    rate_text: "end"
+
+                }
+
+            })
+
+
+
+            return response.send({ "status": true, "message": "user hand over" });
+        } catch (error) {
+            console.error(error)
+            return response.status(402).send({ "status": false, "message": error });
+        }
+    }
 
     public async getRequestCompany(req: any, response: any) {
         const company_id = req.company_id

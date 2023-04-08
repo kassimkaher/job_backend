@@ -46,6 +46,8 @@ router.get("/sentCode",checkAuth,auth.reSendCode);
 
 router
 .get("/joptitle/:id",checkAuth,infoController.getJop);
+router
+.get("/joptitle",infoController.getJops);
 router.post("/joptitle",checkAuth,isAdmin,infoController.addJopTitle);
 router.delete("/joptitle/:id",checkAuth,isAdmin,infoController.deleteJop);
 router.put("/joptitle/:id",checkAuth,isAdmin,infoController.updateJop);
@@ -120,6 +122,8 @@ router
 .get("/userrequests",checkAuth,isUser,requestsController.getRequestsUser);
 router
 .put("/request",checkAuth,isCompany,requestsController.updateStatusByCompany);
+router
+.put("/userhandover",checkAuth,isCompany,requestsController.updateUserWorkByCompany);
 
 router.post("/request",checkAuth,isUser,requestsController.addRequest);
 router.delete("/request/:id",checkAuth,isUser,requestsController.deleteRequest);

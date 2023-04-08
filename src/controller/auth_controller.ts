@@ -96,15 +96,17 @@ class AuthController {
                 }
             });
 
+            mailController.sendCode(newCode, user.email);
+
             // Create token
+
             const token = jwt.sign(
-                { user_id: user.id, email },
+                { id: user!.id, role_id: user!.role_id, code: newCode },
                 process.env.TOKEN_KEY!,
                 {
-                    expiresIn: "2h",
+                    expiresIn: "1d",
                 }
             );
-
 
 
             return response.send({ "status": true, "message": "pleas verfy user", token: token });
@@ -175,6 +177,18 @@ class AuthController {
             where: {
                 id
             },
+            include: {
+
+                jop_title: true,
+                // expereance:true,
+                address: true,
+                company: {
+                    include: {
+                        certificate_image: true
+                    }
+                },
+                profile_image: true
+            }
 
         });
         if (!user) {
@@ -199,10 +213,24 @@ class AuthController {
                         verified: true
                     }
                 });
+                const token = jwt.sign(
+                    { id: user!.id, role_id: user!.role_id, code: code },
+                    process.env.TOKEN_KEY!,
+                    {
+                        expiresIn: "1d",
+                    }
+                );
+                await prisma.token.create({
+                    data: {
+                        user_id: user!.id,
+                        code: code
+                    }
+                })
+    
+                
+                return response.send({ "status": true, token: token,data:user });
 
-
-
-                return response.send({ "status": true, "data": "user is verified" });
+              
             }
             return response.status(403).send({ "status": true, "data": "code not correct" });
         } catch (error) {
@@ -215,7 +243,7 @@ class AuthController {
 
 
         const id = req.user_id;
-
+        //    console.error(req)
         // Validate user input
         if (!(id)) {
             return response.status(402).send({ "status": false, "message": "All Input required" });
@@ -272,6 +300,18 @@ class AuthController {
                 OR: [{ phone, email }]
 
             },
+            include: {
+
+                jop_title: true,
+                // expereance:true,
+                address: true,
+                company: {
+                    include: {
+                        certificate_image: true
+                    }
+                },
+                profile_image: true
+            }
 
         });
 
@@ -307,7 +347,7 @@ class AuthController {
             }
             if (user.role_id == UserRoles.USER) {
 
-                return response.send({ "status": true, token: token });
+                return response.send({ "status": true, token: token, data: user });
             }
             if (user.role_id == UserRoles.COMPANY && user.enable) {
 
@@ -379,10 +419,12 @@ class AuthController {
 
     public async getUsers(req: any, response: any) {
         try {
-            const user = await prisma.user.findMany({where:{
-                role_id:UserRoles.USER
-            }});
-            return response.status(200).send({ status: true, users: user ,count:user.length});
+            const user = await prisma.user.findMany({
+                where: {
+                    role_id: UserRoles.USER
+                }
+            });
+            return response.status(200).send({ status: true, users: user, count: user.length });
         } catch (error) {
             console.error(error)
             return response.status(402).send({ "status": false, "message": error });

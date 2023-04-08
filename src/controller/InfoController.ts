@@ -18,45 +18,50 @@ class InfoController {
 
         // Validate user input
 
-        if (!(title && parent_id!=null)) {
+        if (!(title && parent_id != null)) {
             return response.status(402).send({ "status": false, "message": "field required" });
 
         }
-        const oldUser = await prisma.jopTitle.findFirst({
-            where: {
-                parent_id: parent_id,
-                OR: [{ title }]
+        if (parent_id != 0) {
+            const oldUser = await prisma.jopTitle.findFirst({
+                where: {
+                    parent_id: parent_id,
+                    OR: [{ title }]
 
-            },
+                },
 
-        });
-        if (oldUser) {
-            return response.status(402).send({ "status": false, "message": "jop title is found" });
+            });
+            if (oldUser) {
+                return response.status(402).send({ "status": false, "message": "jop title is found" });
+            }
         }
+
+
         try {
 
             const jop = await prisma.jopTitle.create({
                 data: {
                     title,
-                    parent_id
+                    parent_id,
+                
                 }
             });
 
-
+            
 
 
             return response.send({ "status": true, "data": jop });
         } catch (error) {
             console.error(error)
-            return response.status(402).send({ "status": false, "message": error });
+            return response.status(400).send({ "status": false, "message": error });
         }
     }
     public async updateJop(req: any, response: any) {
 
         const { title } = req.body;
-        const  id  = parseInt(req.params.id);
+        const id = parseInt(req.params.id);
         // Validate user input
-        if (!(title )) {
+        if (!(title)) {
             return response.status(402).send({ "status": false, "message": "All Input required" });
 
         }
@@ -93,10 +98,10 @@ class InfoController {
 
 
     public async getJop(req: any, response: any) {
-      
-        const  parent_id  = parseInt(req.params.id);
 
-       
+        const parent_id = parseInt(req.params.id);
+
+
         try {
             const jop = await prisma.jopTitle.findMany({
                 where: {
@@ -104,10 +109,10 @@ class InfoController {
                 },
                 orderBy: {
                     id: "desc"
-                  }
+                }
             });
 
-            return response.send({ "status": true, "data": jop,"id":req.params.id });
+            return response.send({ "status": true, "data": jop, "id": req.params.id });
 
         } catch (error) {
             console.error(error)
@@ -115,13 +120,35 @@ class InfoController {
         }
     }
 
-    public async deleteJop(req: any, response: any) {
-        const  id  = parseInt(req.params.id);
-        // Validate user input
-       
+    public async getJops(req: any, response: any) {
+
+
+
 
         try {
-           await prisma.jopTitle.delete({
+            const jop = await prisma.jopTitle.findMany({
+                where:{
+                    parent_id:1
+                },
+                include:{
+                    subJobsTitle:true
+                }
+            });
+
+            return response.send({ "status": true, "data": jop });
+
+        } catch (error) {
+            console.error(error)
+            return response.status(402).send({ "status": false, "message": error });
+        }
+    }
+    public async deleteJop(req: any, response: any) {
+        const id = parseInt(req.params.id);
+        // Validate user input
+
+
+        try {
+            await prisma.jopTitle.delete({
                 where: {
                     id
                 }
