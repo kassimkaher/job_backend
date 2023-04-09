@@ -18,7 +18,7 @@ class InfoController {
 
         // Validate user input
 
-        if (!(title && parent_id != null)) {
+        if (!(title )) {
             return response.status(402).send({ "status": false, "message": "field required" });
 
         }
@@ -128,7 +128,7 @@ class InfoController {
         try {
             const jop = await prisma.jopTitle.findMany({
                 where:{
-                    parent_id:1
+                    parent_id:null
                 },
                 include:{
                     subJobsTitle:true

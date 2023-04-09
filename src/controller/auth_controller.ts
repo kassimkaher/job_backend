@@ -57,12 +57,12 @@ class AuthController {
 
         // Validate user input
         if (!(name && phone && email && password && gander && jop_title_id && parthday && role_id)) {
-            return response.status(402).send({ "status": false, "message": "All Input required" });
+            return response.status(400).send({ "status": 1, "message": "All Input required" });
 
         }
 
         if (!(role_id == "USER" || role_id == "COMPANY")) {
-            return response.status(402).send({ "status": false, "message": "account type not correct" });
+            return response.status(400).send({ "status": 2, "message": "account type not correct" });
 
         }
         const oldUser = await prisma.user.findFirst({
@@ -72,7 +72,7 @@ class AuthController {
 
         });
         if (oldUser) {
-            return response.status(402).send({ "status": false, "message": "email is register" });
+            return response.status(402).send({ "status": 3, "message": "email is register" });
         }
         try {
             const sal = await bcrypt.genSalt(10)
@@ -112,7 +112,7 @@ class AuthController {
             return response.send({ "status": true, "message": "pleas verfy user", token: token });
         } catch (error) {
             console.error(error)
-            return response.status(402).send({ "status": false, "message": error });
+            return response.status(400).send({ "status": 4, "message": error });
         }
     }
     public async updateUser(req: any, response: any) {
@@ -170,7 +170,7 @@ class AuthController {
 
         // Validate user input
         if (!(code && id)) {
-            return response.status(402).send({ "status": false, "message": "All Input required" });
+            return response.status(400).send({ "status": 1, "message": "All Input required" });
 
         }
         const user = await prisma.user.findFirst({
@@ -180,7 +180,7 @@ class AuthController {
             include: {
 
                 jop_title: true,
-                // expereance:true,
+                 expereance:true,
                 address: true,
                 company: {
                     include: {
@@ -192,7 +192,7 @@ class AuthController {
 
         });
         if (!user) {
-            return response.status(402).send({ "status": false, "message": "user not found " });
+            return response.status(402).send({ "status": 2, "message": "user not found " });
         }
         try {
 
@@ -290,7 +290,7 @@ class AuthController {
 
         // Validate user input
         if (!((phone || email) && password)) {
-            return response.status(402).send({ "status": false, "message": "All Input required" });
+            return response.status(400).send({ "status": 1, "message": "All Input required" });
 
         }
 
@@ -303,7 +303,7 @@ class AuthController {
             include: {
 
                 jop_title: true,
-                // expereance:true,
+                expereance:true,
                 address: true,
                 company: {
                     include: {
@@ -319,7 +319,7 @@ class AuthController {
         const pass = user ? await bcrypt.compare(password, user?.password!) : null;
 
         if (user == null || !pass) {
-            return response.status(402).send({ "status": false, "message": "email or phone not register" });
+            return response.status(400).send({ "status": 2, "message": "email or phone not register" });
         }
 
         try {
@@ -342,7 +342,7 @@ class AuthController {
             })
 
             if (!user?.verified) {
-                return response.status(402).send({ "status": false, "message": "user must veryfy", token: token });
+                return response.status(400).send({ "status": 3, "message": "user must veryfy", token: token });
 
             }
             if (user.role_id == UserRoles.USER) {
@@ -353,14 +353,14 @@ class AuthController {
 
                 return response.send({ "status": true, token: token });
             } else {
-                return response.status(402).send({ "status": false, "message": "please complete information", token: token });
+                return response.status(400).send({ "status": 4, "message": "please complete information", token: token });
 
             }
 
 
         } catch (error) {
 
-            return response.status(402).send({ status: false, message: session, error: error });
+            return response.status(402).send({ status: 5, message: session, error: error });
         }
     }
 

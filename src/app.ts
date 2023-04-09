@@ -17,9 +17,7 @@ app.use("/api",router);
 const oneDay = 1000 * 60 * 60 * 24 * 300;
 
 // app.use(database);
-app.listen(8000,()=>{
-console.log("server is start");
-});
+app.listen(8000);
 
 
 
